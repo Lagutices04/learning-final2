@@ -38,5 +38,8 @@ urlpatterns = [
     path('cohorte/<int:cohorte_id>/estudiantes/', estudiantes_inscritos, name='estudiantes_inscritos'),
 
     
+]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Django puede servir los archivos estáticos 
 
-] +static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

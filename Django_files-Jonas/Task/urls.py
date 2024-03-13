@@ -1,95 +1,37 @@
-"""Task Urls."""
-
-# Django
-
+from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
-
-# Views
-from Task.views import TaskCreationView
-from Task import views
-from .views import download_file
+from . import views
 
 
 urlpatterns = [
-    path(route='',
-         view=views.tasks, 
-         name='tasks'
-         ),
-
-    path(route='tasks_completed/',
-         view=views.tasks_completed, 
-         name='task_completed'
-         ),
-
-     path(route='create/',
-         view=views.create_task,
-         name='create_task'
-         ),
-
-    path(route='create/<int:course_id>/',
-         view=TaskCreationView.as_view(),
-         name='create_task_with_course'
-         ),
-
-    #<int:task_id>: significa que es un dato id entero,y se enviara al task_detail
-    path(route='calificar_tarea/',
-         view=views.calificar_tarea, 
-         name='calificar_tarea'
-         ),
-
-    path(route='create_nota/',
-         view=views.create_nota,
-         name='create_nota'
-         ),
-
-    path(route='nota/',
-         view=views.nota, 
-         name='notas'
-         ),
-
-    path(route='lista/notas/',
-         view=views.lista_notas, 
-         name='notas'
-         ),
-
-    path(route='<int:task_id>/nota_detail/',
-         view=views.nota_detail, 
-         name='nota_detail'
-         ),
-
-    path(route='<int:task_id>/complete/',
-         view=views.complete_task,
-         name='complete_task'
-         ),
-
-    path(route='<int:task_id>/delete/',
-         view=views.delete_task,
-         name='delete_task'
-         ), 
-
-    path(route='<int:task_id>/',
-         view=views.task_detail,
-         name='task_detail'
-         ),
-
-    path(route='notas/<int:nota_id>/',
-         view=views.nota_detail, 
-         name='nota_detail'
-         ),
-
-    path(route='notas/<int:nota_id>/complete/',
-         view=views.complete_nota, 
-         name='complete_nota'
-         ),
-
-    path(route='notas/<int:nota_id>/delete/',
-         view=views.delete_nota, 
-         name='delete_nota'
-         ),
-     path(route='complete/',
-          view=views.tasks_completed2,
-          name='task_completed'),
-     
-         path('download/<str:file_name>/', download_file, name='download_file'),
-
+    path('', views.tasks, name='tasks'),
+    path('tasks_completed/', views.tasks_completed, name='task_completed'),
+    path('create/', views.create_task, name='create_task'),
+    #path('create/<int:course_id>/', TaskCreationView.as_view(), name='create_task_with_course'),
+    path('calificar_tarea/', views.calificar_tarea, name='calificar_tarea'),
+    path('create_nota/', views.create_nota, name='create_nota'),
+    path('lista/notas/', views.lista_notas, name='lista_notas'),
+    path('<int:task_id>/nota_detail/', views.nota_detail, name='nota_detail'),
+    path('<int:task_id>/complete/', views.complete_task, name='complete_task'),
+    path('<int:task_id>/delete/', views.delete_task, name='delete_task'),
+    path('<int:task_id>/', views.task_detail, name='task_detail'),
+    path('notas/<int:nota_id>/', views.nota_detail, name='nota_detail'),
+    path('notas/<int:nota_id>/complete/', views.complete_nota, name='complete_nota'),
+    path('notas/<int:nota_id>/delete/', views.delete_nota, name='delete_nota'),
+    path('complete/', views.tasks_completed2, name='task_completed_2'),
+    path('nota/', views.nota, name='notas'),
+    
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+#Django pueda servir los archivos estáticos 
+
+     
+   
+
+

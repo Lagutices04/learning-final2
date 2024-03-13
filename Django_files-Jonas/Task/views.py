@@ -18,18 +18,23 @@ from django.contrib.auth.decorators import login_required
 @login_required 
 def tasks(request):
     
-    tasks =Task.objects.filter( datecompleted__isnull=True)
+    if request.user.is_staff or request.user.is_profesor or request.user.is_Estudiante:
+
+    
+        tasks =Task.objects.filter( datecompleted__isnull=True)
     #devolver todas las tareas de la base de datos
     #filter(user=request.user) esto mostrara solo las tareas que correspondan al usuario que inicio sesion,no vera las tareas de otros usuarios
     #tambien mostrara las tareas que aun no estan completadas
     
-    return render(request, 'Task/tasks.html',{'tasks':tasks})
-#te pasare el dato al front,con el dato de tareas que se ha consultado
+        return render(request, 'Task/tasks.html', {'tasks': tasks})
+#te  pasare el dato al front,con el dato de tareas que se ha consultado
 
 #render espera el parametro request
  #espera usuario y contraseña para guardarlo en ese usuario
          #devolvera un objto user
-
+    else:
+        # Manejar el caso en el que el usuario no tiene permiso para ver las tareas
+        return redirect('error')
 @login_required         
 def tasks_completed(request):    
       tasks =Task.objects.filter(user=request.user, datecompleted__isnull=False).order_by
@@ -39,7 +44,7 @@ def tasks_completed(request):
 
 @login_required
 def create_task(request):
-    if request.user.is_staff or request.user.is_profesor:
+    if request.user.is_staff or request.user.is_profesor or request.user.is_Estudiante:
         courses = Cohorte.objects.all()  # Obtener todos los cursos disponibles
 
         if request.method == 'GET':
@@ -51,7 +56,6 @@ def create_task(request):
                     new_task = form.save(commit=False)
                     new_task.user = request.user
                     new_task.save()
-                    print(new_task)
                     return redirect('tasks:tasks')
             except ValueError:
                 return render(request, 'Task/create_task.html', {
@@ -95,22 +99,28 @@ def tasks_completed2(request):  # Vista de Tareas completadas
         'tasks': tasks
     })
 
+from django.shortcuts import render, get_object_or_404
+from .models import Task
+
 @login_required
 def task_detail(request, task_id):
-    if request.method == 'GET':
-        # Obtén la tarea y asegúrate de que pertenezca al usuario a través del modelo Cohorte
-        task = get_object_or_404(Task, pk=task_id)
-        form = TaskForm(instance=task)
-        return render(request, 'Task/task_detail.html', {'task': task, 'form': form})
-    else:
-        try:
-            # Similarmente, asegúrate de que la tarea pertenezca al usuario a través del modelo Cohorte
-            task = get_object_or_404(Task, pk=task_id)
-            form = TaskForm(request.POST, instance=task)
+    # Obtener la tarea
+    task = get_object_or_404(Task, pk=task_id)
+    
+    if request.method == 'POST':
+        # Procesar el formulario si es una solicitud POST
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
             form.save()
             return redirect('tasks:tasks')
-        except ValueError:
-            return render(request, 'tasks:task_detail', {'task': task, 'form': form, 'error': 'Error al momento de actualizar la tarea'})
+    else:
+        # Si es una solicitud GET, mostrar el detalle de la tarea
+        form = TaskForm(instance=task)
+        # Pasar el archivo adjunto a la plantilla si existe
+        attachment = task.field if task.field else None
+        # Renderizar la plantilla con los detalles de la tarea y el formulario
+        return render(request, 'Task/task_detail.html', {'task': task, 'form': form, 'attachment': attachment})
+
 
 @login_required
 def complete_task(request,task_id):
@@ -172,17 +182,17 @@ def nota(request):
     promedio = sum([nota.average for nota in notas]) / total_notas if total_notas > 0 else 0
     return render(request, 'Task/notas.html', {'notas': notas, 'promedio': promedio})
 
-def create_nota(request):
+def create_nota(request, task_id=None):
     if request.method == 'GET':
         return render(request, 'Task/create_nota.html', {'form': CalificacionForm})
     else:
         try:
             form = CalificacionForm(request.POST, request.FILES)
             if form.is_valid():
-                new_nota = form.save(commit=False)              
+                new_nota = form.save(commit=False)
                 new_nota.user = request.user
                 new_nota.save()
-                return redirect('notas')
+                return redirect('tasks:notas')
         except ValueError:
             return render(request, 'Task/create_nota.html', {
                 'form': CalificacionForm,
@@ -222,14 +232,3 @@ def delete_nota(request,task_id):
 def lista_notas(request):
     notas = Calificacion.objects.filter(student=request.user)
     return render(request, 'Task/lista_notas.html', {'notas': notas})
-def download_file(request, file_name):
-    # Directorio donde se almacenan los archivos adjuntos
-    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-    # Intenta abrir el archivo adjunto
-    try:
-        with open(file_path, 'rb') as f:
-            response = HttpResponse(f.read(), content_type="application/octet-stream")
-            response['Content-Disposition'] = f"inline; filename={file_name}"
-            return response
-    except FileNotFoundError:
-        return HttpResponse("El archivo solicitado no se encontró.", status=404)

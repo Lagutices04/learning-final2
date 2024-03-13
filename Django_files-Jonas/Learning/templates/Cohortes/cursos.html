@@ -41,10 +41,15 @@
                         <p class="card-text">
                             <strong>Profesor: </strong>{{ course.teacher.first_name }} {{ course.teacher.last_name }}
                         </p>
-                        <p class="card-text"><strong>Cantidad de inscriptos: </strong>
+                        <p class="card-text"><strong>Cantidad de inscritos: </strong>
                             <a href="{% url 'estudiantes_inscritos' course.id %}" class="btn btn-link">
                                 {{ course.enrollment_count }}
                             </a>
+                            <a href="{% url 'tasks:create_nota' %}">Crear Nota
+                                {{ course.enrollment_count }}
+                            </a>
+         
+
                         </p>
 
                         {% if course.status == 'F' %}
@@ -68,6 +73,8 @@
                             {% elif course.is_enrolled %}
                                 <a class="btn btn-sm btn-primary" href="{% url 'learning_overview' %}">Ir al Perfil</a>
                                 <a class="btn btn-sm btn-primary" href="{% url 'Task:create_task' %}">Ir a crear tarea</a>
+                                <a class="btn btn-sm btn-primary" href="{% url 'tasks:lista_notas' %}">ver  Nota</a>
+
 
                             {% endif %}
                         {% endif %}

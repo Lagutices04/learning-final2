@@ -22,4 +22,4 @@ class TaskForm(forms.ModelForm, ):
 class CalificacionForm(forms.ModelForm):
     class Meta:
         model = Calificacion
-        fields = ['student','mark1','mark2','mark3','average','tareas']
+        fields = ['student','mark1','tareas']
